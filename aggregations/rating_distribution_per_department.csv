@@ -1,0 +1,41 @@
+department,rating,rating_count
+Customer Support,1.0,4
+Customer Support,2.0,9
+Customer Support,3.0,16
+Customer Support,4.0,32
+Customer Support,5.0,25
+Engineering,1.0,7
+Engineering,2.0,10
+Engineering,3.0,32
+Engineering,4.0,57
+Engineering,5.0,42
+Finance,1.0,5
+Finance,2.0,17
+Finance,3.0,52
+Finance,4.0,83
+Finance,5.0,48
+HR,1.0,2
+HR,2.0,11
+HR,3.0,15
+HR,4.0,20
+HR,5.0,20
+Marketing,1.0,1
+Marketing,2.0,6
+Marketing,3.0,12
+Marketing,4.0,18
+Marketing,5.0,14
+Product,1.0,5
+Product,2.0,2
+Product,3.0,10
+Product,4.0,25
+Product,5.0,18
+Sales,1.0,4
+Sales,2.0,13
+Sales,3.0,25
+Sales,4.0,43
+Sales,5.0,30
+Talent Acquisition,1.0,4
+Talent Acquisition,2.0,4
+Talent Acquisition,3.0,12
+Talent Acquisition,4.0,28
+Talent Acquisition,5.0,24

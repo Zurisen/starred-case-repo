@@ -25,3 +25,6 @@ logs
 # Internal review documents (not for candidates)
 INTERNAL_REVIEW.md
 **/INTERNAL_REVIEW.md
+
+# Virtual environments
+.venv*
