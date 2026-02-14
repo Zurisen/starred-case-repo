@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document describes the data ingestion, cleaning, sanitization, and join operations performed in this project. The pipeline processes survey feedback data and user metadata to produce a consolidated fact table to then be used to perform analytics.
+This document describes the data ingestion, cleaning, sanitization, and join operations performed in this project using Python Pandas. The pipeline processes survey feedback data and user metadata to produce a consolidated fact table to then be used to perform analytics.
 
 ## Data Processing Pipeline
 
@@ -151,8 +151,9 @@ For this exercise we fully use pandas for analytics, since it is a small dataset
 │   ├── avg_rating_per_region.png       # Chart: bar chart
 │   ├── rating_distribution_per_department.csv  # Output: rating counts
 │   └── rating_distribution_per_department.png  # Chart: stacked bar
-└── notebooks/
-    └── data_exploration.ipynb   # Exploratory analysis
+├── notebooks/
+│   └── data_exploration.ipynb   # Exploratory analysis
+├── bonus/
 ```
 
 ## Future Considerations & Improvements
@@ -161,3 +162,7 @@ For this exercise we fully use pandas for analytics, since it is a small dataset
 - We have used csv as a data format. That is fine for this exercise, but we could consider large datasets columnar storages as well (e.g: parquet), for efficient batching processing.
 - Add extra sanitizing conditions for some of the fields. We assumed user names were just a single field (not separated in Name and Surname). Regions and Countries ,could also be further sanitized to make sure they belong to an existing class, preventing possible typos or unhandled cases.
 - Analytics have been performed fully using Pandas, for larger datasets, we could implement distributed computing strategies with tools like PySpark.
+
+## Bonus Folder
+
+The `bonus/` folder contains the optional assignment related to the Real-Time Architecture Design.
