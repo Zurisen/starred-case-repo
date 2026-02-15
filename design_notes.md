@@ -84,31 +84,31 @@ The `run_analytics.py` script performs aggregations on the processed fact table 
 
 ### Timestamp Handling
 
-> **Location:** [src/data_sanitization.py](src/data_sanitization.py#L75-L78)
+> **Location:** [src/data_sanitization.py](src/data_sanitization.py#L82-84)
 
 Convert timestamp to datetime, coercing errors to NaT (Not a Time). We assume survey data is still valid even if there is no timestamp.
 
 ### String Field Standardization
 
-> **Location:** [src/data_sanitization.py](src/data_sanitization.py#L83-L86)
+> **Location:** [src/data_sanitization.py](src/data_sanitization.py#L90-L92)
 
 Strip whitespace from string columns. We could also further standardize some fields like `region` or `department` by having shared DTOs with the APIs to have an enumeration check, instead of plain strings.
 
 ### Rating Field Validation
 
-> **Location:** [src/data_sanitization.py](src/data_sanitization.py#L97-L100)
+> **Location:** [src/data_sanitization.py](src/data_sanitization.py#L104-L106)
 
 Drop rows with missing `rating` values because we assume it is a necessary field for analytics. If the rating displays a value beyond the allowed range, we clip it to fit [1, 5].
 
 ### Duplicate Submission IDs
 
-> **Location:** [src/data_sanitization.py](src/data_sanitization.py#L105-L108)
+> **Location:** [src/data_sanitization.py](src/data_sanitization.py#L112-L115)
 
 Fix duplicate `submission_id` entries by dropping the first occurrence. Submission IDs should be unique. In the exploratory analysis we saw that the duplicates were carrying the same data. Thus this might be caused by a mistaken rewrite from the API side, and not actually a different submission GUID conflict (architecture consideration for future).
 
 ### Email Validation
 
-> **Location:** [src/data_sanitization.py](src/data_sanitization.py#L144-L148)
+> **Location:** [src/data_sanitization.py](src/data_sanitization.py#L152-L156)
 
 Validate emails via regex pattern. We create a new column to store whether the email formats are valid or not (might have been caused by an API write error). We assume there was frontend/backend email validation beforehand that then possibly led to a wrong write in the database. Thus the survey entry/user metadata might still be valid, and we don't want to drop it beforehand.
 
@@ -116,7 +116,7 @@ Validate emails via regex pattern. We create a new column to store whether the e
 
 > **Location:** [src/data_sanitization.py](src/data_sanitization.py#L38-L41)
 
-Ensure user uniqueness by dropping duplicate emails (keeping first occurrence). It would be nice to have a timestamp field to check which entry was added first/last to choose which to keep.
+Ensure user uniqueness by dropping duplicate emails (keeping last occurrence). It would be nice to have a `createdAt` field to check when the entry was added to choose which to keep.
 
 ### One-to-Many Join Strategy
 
