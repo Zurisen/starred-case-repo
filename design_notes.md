@@ -126,25 +126,25 @@ Join survey data with user metadata using a one-to-many relationship: we are ass
 
 ### Unmatched Survey Responses
 
-> **Location:** [run_sanitization.py](run_sanitization.py#L37-L44)
+> **Location:** [run_sanitization.py](run_sanitization.py#L43-L45)
 
 Report unmatched survey responses (names not found in user metadata). We could optionally create a new user metadata entry for missed metadata, or drop the surveys from the survey results table that have no assigned user.
 
 ### Join and Sanitization Pipeline Structure
 
-> **Location:** [run_sanitization.py](run_sanitization.py#L59-L62)
+> **Location:** [run_sanitization.py](run_sanitization.py#L65-L66)
 
 We performed the join operation in the same file as the sanitization was performed. We could split this operation in two different steps: data sanitization → save of sanitized dataframes → import sanitized dataframes and join → save joined dataframes.
 
 ### Pipeline Separation
 
-> **Location:** [run_analytics.py](run_analytics.py#L41-L44)
+> **Location:** [run_analytics.py](run_analytics.py#L45-L48)
 
 We could build a joined pipeline with sanitization+analytics, without the need to reload the previously saved dataframe. But we decided to split them since leaving these two steps of the pipeline separated makes more sense from a hypothetical cloud-deployable service perspective.
 
 ### Pandas for Analytics
 
-> **Location:** [run_analytics.py](run_analytics.py#L47-L50)
+> **Location:** [run_analytics.py](run_analytics.py#L54-L57)
 
 For this exercise we fully use pandas for analytics, since it is a small dataset. In production pipelines, pandas memory limits makes it unfeasible to use for large datasets. Instead we would use distributed computing pipelines such as Spark.
 
