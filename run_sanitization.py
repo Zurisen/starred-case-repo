@@ -41,15 +41,30 @@ if __name__ == '__main__':
     print(f"Joined dataset: {len(df_joined)} records")
     
     ## INFO
-    # Report unmatched survey responses (emails not found in user metadata). We could optionally create a new user
+    # Report unmatched survey responses (names not found in user metadata). We could optionally create a new user
     # metadata entry for missed metadata. Or drop the surveys from the survey results table that have no assigned user.
-    unmatched = df_joined['full_name'].isna().sum()
+    unmatched_mask = df_joined['full_name'].isna()
+    unmatched = unmatched_mask.sum()
     if unmatched > 0:
         print(f"Warning: {unmatched} survey response(s) have no matching user metadata.")
+        print("Rows with unmatched user metadata:")
+        print(df_joined[unmatched_mask])
+    
+    # Combine email_valid columns from both sources (and logic: if None is True, result is False)
+    email_valid_survey = df_joined['email_valid_survey'].fillna(False)
+    email_valid_user = df_joined['email_valid_user'].fillna(False)
+    # Ensure correct types to avoid future downcasting warning
+    email_valid_survey = email_valid_survey.infer_objects(copy=False)
+    email_valid_user = email_valid_user.infer_objects(copy=False)
+    df_joined['email_valid'] = email_valid_survey & email_valid_user
     
     # Select final columns and save fact table
-    output_cols = ['submission_id', 'timestamp', 'user_email', 'rating', 'comment_text', 'region', 'department', 'country']
+    output_cols = ['submission_id', 'timestamp', 'user_email', 'rating', 'comment_text', 'region', 'department', 'country', 'email_valid']
     df_fact = df_joined[output_cols]
+
+    ## INFO
+    # We performed the join operation in the same file than the sanitization was performed. We could split this operation in two different
+    # operations: data sanitiazion --> save of sanitized dataframes --> import sanitized dataframes and join --> save joined dataframes.
     df_fact.to_csv('data/fct_survey_feedback.csv', index=False)
     print(f"\nSaved fct_survey_feedback.csv with {len(df_fact)} records.")
     

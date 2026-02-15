@@ -9,22 +9,24 @@ import pandas as pd
 _EMAIL_PATTERN = re.compile(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
 
 
-def sanitize_user_data(df: pd.DataFrame) -> pd.DataFrame:
+def sanitize_user_data(df: pd.DataFrame, copy: bool = True) -> pd.DataFrame:
     """
     Sanitize user metadata dataframe.
     
     - Strip whitespace from string columns
     - Normalize email to lowercase
-    - Drop duplicate user_email entries (keep first occurrence)
+    - Drop duplicate user_email entries (keep last occurrence)
     - Validate email format
     
     Args:
         df: Raw user metadata dataframe
+        copy: If True, work on a copy to avoid side effects. If False, modify in place.
         
     Returns:
         Sanitized dataframe
     """
-    df = df.copy()
+    if copy:
+        df = df.copy()
     
     # Strip whitespace from string columns
     string_cols = ['user_email', 'full_name', 'department', 'country']
@@ -35,13 +37,18 @@ def sanitize_user_data(df: pd.DataFrame) -> pd.DataFrame:
     # Normalize email to lowercase
     df['user_email'] = df['user_email'].str.lower()
     
-    ## INFO
-    # Ensure user uniqueness by dropping duplicate emails (keep first occurrence). It would be nice to have a timestamp
-    # field to check which entry was added firs last to choose which to keep.
+    # Ensure user uniqueness by dropping duplicate emails (keep last occurrence).
     dupe_count = df['user_email'].duplicated().sum()
     if dupe_count > 0:
-        print(f"Dropping {dupe_count} duplicate user_email(s), keeping first occurrence.")
-        df = df.drop_duplicates(subset='user_email', keep='first')
+        # Check if duplicates have different data
+        dupe_emails = df[df['user_email'].duplicated(keep=False)]['user_email'].unique()
+        for email in dupe_emails:
+            rows = df[df['user_email'] == email]
+            if not rows.drop('user_email', axis=1).nunique().eq(1).all():
+                print(f"WARNING: Duplicate user_email '{email}' has differing data:")
+                print(rows)
+        print(f"Dropping {dupe_count} duplicate user_email(s), keeping last occurrence.")
+        df = df.drop_duplicates(subset='user_email', keep='last')
     
     # Validate emails
     df = validate_emails(df, 'user_email')
@@ -62,7 +69,7 @@ def sanitize_survey_data(df: pd.DataFrame) -> pd.DataFrame:
     - Convert timestamp to datetime (invalid values become NaT)
     - Strip whitespace from string columns
     - Normalize email to lowercase
-    - Fix duplicate submission_ids by dropping first duplicated entry
+    - Fix duplicate submission_ids by dropping last duplicated entry
     
     Args:
         df: Raw survey results dataframe
@@ -129,24 +136,24 @@ def is_valid_email(email: str) -> bool:
     return bool(_EMAIL_PATTERN.match(email.strip()))
 
 
-def validate_emails(df: pd.DataFrame, email_col: str = 'user_email') -> pd.DataFrame:
+def validate_emails(df: pd.DataFrame, email_col: str = 'user_email', copy: bool = True) -> pd.DataFrame:
     """
     Add a column indicating whether each email is valid.
     
     Args:
         df: DataFrame with email column
         email_col: Name of the email column
-        
+        copy: If True, work on a copy to avoid side effects. If False, modify in place.
     Returns:
         DataFrame with 'email_valid' column added
     """
-
+    if copy:
+        df = df.copy()
     ## INFO
     # Validate emails via regex pattern. We are going to create a new column to bool store whether
     # the email formats are valid or not (might have been caused by an API write error or something like that).
     # So we are assuming that there was an frontend/backend email validation beforehand that then possibly lead to
     # a wrong writing in the db. Thus the survey entry/user metadata might still be valid, and we dont want to drop it beforehand
-    df = df.copy()
     df['email_valid'] = df[email_col].apply(is_valid_email)
     invalid_count = (~df['email_valid']).sum()
     if invalid_count > 0:
@@ -157,17 +164,16 @@ def validate_emails(df: pd.DataFrame, email_col: str = 'user_email') -> pd.DataF
 
 def _fix_duplicate_submission_ids(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Drop the first occurrence of duplicate submission_ids.
+    Remove all but one occurrence of duplicate submission_ids, keeping the last occurrence.
+    Also verify if duplicates have different data.
     """
-    # Get all first occurrences of duplicates
     dupe_ids = df['submission_id'][df['submission_id'].duplicated(keep=False)].unique()
-    indices_to_drop = []
     for dupe_id in dupe_ids:
-        first_idx = df.index[df['submission_id'] == dupe_id].tolist()[0]
-        indices_to_drop.append(first_idx)
-        print(f"Dropping first occurrence of duplicate: {dupe_id} at index {first_idx}")
-    
-    df = df.drop(indices_to_drop)
+        rows = df[df['submission_id'] == dupe_id]
+        if not rows.drop('submission_id', axis=1).nunique().eq(1).all():
+            print(f"WARNING: Duplicate submission_id '{dupe_id}' has differing data:")
+            print(rows)
+    df = df.drop_duplicates(subset='submission_id', keep='last')
     return df
 
 

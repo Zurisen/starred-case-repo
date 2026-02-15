@@ -48,6 +48,9 @@ if __name__ == '__main__':
     # makes more sense from an hypothetical cloud-deployable service perspective.
     df_fact = pd.read_csv('data/fct_survey_feedback.csv')
     
+    # Only include users with valid emails
+    df_fact = df_fact[df_fact['email_valid'] == True]
+    
     ## INFO
     # For this exercise we will fully use pandas for analytics, since it is a small dataset. In production pipelines
     # pandas memory limits makes it unfeasible to use for large datasets. Instead we would use distributed computing
