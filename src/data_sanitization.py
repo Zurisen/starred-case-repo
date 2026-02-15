@@ -3,7 +3,7 @@ Data sanitization module.
 """
 import re
 import pandas as pd
-from models.defaults import DEPARTMENT_DEFAULT, COUNTRY_DEFAULT
+from models.defaults import DEPARTMENT_DEFAULT, COUNTRY_DEFAULT, REGION_DEFAULT
 
 # Simple email regex pattern
 _EMAIL_PATTERN = re.compile(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
@@ -110,6 +110,9 @@ def sanitize_survey_data(df: pd.DataFrame) -> pd.DataFrame:
     if 'rating' in df.columns:
         df = df.dropna(subset=['rating'])
         df['rating'] = df['rating'].clip(lower=1, upper=5)
+
+    if 'region' in df.columns:
+        df['region'] = df['region'].fillna(REGION_DEFAULT)
 
 
     ## INFO

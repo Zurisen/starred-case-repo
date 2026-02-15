@@ -102,13 +102,13 @@ Drop rows with missing `rating` values because we assume it is a necessary field
 
 ### Duplicate Submission IDs
 
-> **Location:** [src/data_sanitization.py](src/data_sanitization.py#L115-L119)
+> **Location:** [src/data_sanitization.py](src/data_sanitization.py#L118-L121)
 
 Fix duplicate `submission_id` entries by dropping the first occurrence. Submission IDs should be unique. In the exploratory analysis we saw that the duplicates were carrying the same data. Thus this might be caused by a mistaken rewrite from the API side, and not actually a different submission GUID conflict (architecture consideration for future).
 
 ### Email Validation
 
-> **Location:** [src/data_sanitization.py](src/data_sanitization.py#L155-L159)
+> **Location:** [src/data_sanitization.py](src/data_sanitization.py#L158-L162)
 
 Validate emails via regex pattern. We create a new column to store whether the email formats are valid or not (might have been caused by an API write error). We assume there was frontend/backend email validation beforehand that then possibly led to a wrong write in the database. Thus the survey entry/user metadata might still be valid, and we don't want to drop it beforehand.
 
