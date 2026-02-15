@@ -3,7 +3,7 @@ Data sanitization module.
 """
 import re
 import pandas as pd
-
+from models.defaults import DEPARTMENT_DEFAULT, COUNTRY_DEFAULT
 
 # Simple email regex pattern
 _EMAIL_PATTERN = re.compile(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
@@ -55,8 +55,11 @@ def sanitize_user_data(df: pd.DataFrame, copy: bool = True) -> pd.DataFrame:
     
     # Fill missing country values with "Not specified" instead of dropping them
     if 'country' in df.columns:
-        df['country'] = df['country'].fillna('Not specified')
+        df['country'] = df['country'].fillna(COUNTRY_DEFAULT)
     
+    if 'department' in df.columns:
+        df['department'] = df['department'].fillna(DEPARTMENT_DEFAULT)
+        
     # Reset index after sanitization
     df = df.reset_index(drop=True)
     

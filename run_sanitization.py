@@ -8,6 +8,7 @@ from src.data_sanitization import (
     validate_data,
     print_validation_report
 )
+from models.defaults import DEPARTMENT_DEFAULT, COUNTRY_DEFAULT
 
 
 if __name__ == '__main__':
@@ -49,6 +50,10 @@ if __name__ == '__main__':
         print(f"Warning: {unmatched} survey response(s) have no matching user metadata.")
         print("Rows with unmatched user metadata:")
         print(df_joined[unmatched_mask])
+    
+    # Apply default values to unmatched rows
+    df_joined.loc[unmatched_mask, 'department'] = DEPARTMENT_DEFAULT
+    df_joined.loc[unmatched_mask, 'country'] = COUNTRY_DEFAULT
     
     # Combine email_valid columns from both sources (and logic: if None is True, result is False)
     email_valid_survey = df_joined['email_valid_survey'].fillna(False)

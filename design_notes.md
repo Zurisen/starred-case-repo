@@ -84,31 +84,31 @@ The `run_analytics.py` script performs aggregations on the processed fact table 
 
 ### Timestamp Handling
 
-> **Location:** [src/data_sanitization.py](src/data_sanitization.py#L82-84)
+> **Location:** [src/data_sanitization.py](src/data_sanitization.py#L85-L88)
 
 Convert timestamp to datetime, coercing errors to NaT (Not a Time). We assume survey data is still valid even if there is no timestamp.
 
 ### String Field Standardization
 
-> **Location:** [src/data_sanitization.py](src/data_sanitization.py#L90-L92)
+> **Location:** [src/data_sanitization.py](src/data_sanitization.py#L93-L96)
 
 Strip whitespace from string columns. We could also further standardize some fields like `region` or `department` by having shared DTOs with the APIs to have an enumeration check, instead of plain strings.
 
 ### Rating Field Validation
 
-> **Location:** [src/data_sanitization.py](src/data_sanitization.py#L104-L106)
+> **Location:** [src/data_sanitization.py](src/data_sanitization.py#L107-L110)
 
 Drop rows with missing `rating` values because we assume it is a necessary field for analytics. If the rating displays a value beyond the allowed range, we clip it to fit [1, 5].
 
 ### Duplicate Submission IDs
 
-> **Location:** [src/data_sanitization.py](src/data_sanitization.py#L112-L115)
+> **Location:** [src/data_sanitization.py](src/data_sanitization.py#L115-L119)
 
 Fix duplicate `submission_id` entries by dropping the first occurrence. Submission IDs should be unique. In the exploratory analysis we saw that the duplicates were carrying the same data. Thus this might be caused by a mistaken rewrite from the API side, and not actually a different submission GUID conflict (architecture consideration for future).
 
 ### Email Validation
 
-> **Location:** [src/data_sanitization.py](src/data_sanitization.py#L152-L156)
+> **Location:** [src/data_sanitization.py](src/data_sanitization.py#L155-L159)
 
 Validate emails via regex pattern. We create a new column to store whether the email formats are valid or not (might have been caused by an API write error). We assume there was frontend/backend email validation beforehand that then possibly led to a wrong write in the database. Thus the survey entry/user metadata might still be valid, and we don't want to drop it beforehand.
 
@@ -120,31 +120,31 @@ Ensure user uniqueness by dropping duplicate emails (keeping last occurrence). I
 
 ### One-to-Many Join Strategy
 
-> **Location:** [run_sanitization.py](run_sanitization.py#L29-L35)
+> **Location:** [run_sanitization.py](run_sanitization.py#L31-L33)
 
 Join survey data with user metadata using a one-to-many relationship: we are assuming one user can have multiple survey responses. We could specify a time cooldown or extra conditions for submitting new survey results in the survey API.
 
 ### Unmatched Survey Responses
 
-> **Location:** [run_sanitization.py](run_sanitization.py#L43-L45)
+> **Location:** [run_sanitization.py](run_sanitization.py#L44-L46)
 
 Report unmatched survey responses (names not found in user metadata). We could optionally create a new user metadata entry for missed metadata, or drop the surveys from the survey results table that have no assigned user.
 
 ### Join and Sanitization Pipeline Structure
 
-> **Location:** [run_sanitization.py](run_sanitization.py#L65-L66)
+> **Location:** [run_sanitization.py](run_sanitization.py#L70-L72)
 
 We performed the join operation in the same file as the sanitization was performed. We could split this operation in two different steps: data sanitization → save of sanitized dataframes → import sanitized dataframes and join → save joined dataframes.
 
 ### Pipeline Separation
 
-> **Location:** [run_analytics.py](run_analytics.py#L45-L48)
+> **Location:** [run_analytics.py](run_analytics.py#L45-L49)
 
 We could build a joined pipeline with sanitization+analytics, without the need to reload the previously saved dataframe. But we decided to split them since leaving these two steps of the pipeline separated makes more sense from a hypothetical cloud-deployable service perspective.
 
 ### Pandas for Analytics
 
-> **Location:** [run_analytics.py](run_analytics.py#L54-L57)
+> **Location:** [run_analytics.py](run_analytics.py#L54-L58)
 
 For this exercise we fully use pandas for analytics, since it is a small dataset. In production pipelines, pandas memory limits makes it unfeasible to use for large datasets. Instead we would use distributed computing pipelines such as Spark.
 
@@ -159,6 +159,8 @@ For this exercise we fully use pandas for analytics, since it is a small dataset
 │   ├── __init__.py
 │   ├── data_sanitization.py     # Sanitization functions
 │   └── analytics.py             # Analytics aggregation functions
+├── models/
+│   └── defaults.py              # Default values for data processing
 ├── data/
 │   ├── survey_results.csv       # Input: raw survey data
 │   ├── user_metadata.csv        # Input: raw user metadata
